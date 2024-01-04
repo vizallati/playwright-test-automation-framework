@@ -1,9 +1,12 @@
 from pytest_bdd import when
-from helpers.utils import Settings as settings
+from dsl.pages.wp_crawler import WPCrawlerPage
+from dsl.pages.wp_dashboard import WPDashboardPage
+from dsl.pages.wp_login import WPLoginPage
+from dsl.pages.wp_plugins import WPPluginsPage
 
-from dsl.base_actions import BaseActions
 
-
-@when("I navigate to indeed's url")
-def navigate_to_homepage():
-    BaseActions(page=settings.page).navigate_to_page(url=settings.urls['indeed']['home'])
+@when("I click on the crawl button in wp crawl admin page")
+def trigger_crawl():
+    WPDashboardPage().hover_over_menu_item(menu_item='Tools')
+    WPDashboardPage().select_wp_crawler()
+    WPCrawlerPage().crawl_website()

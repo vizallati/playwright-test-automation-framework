@@ -1,9 +1,14 @@
+import os
 import random
+
+from dsl.pages.wp_dashboard import WPDashboardPage
+from dsl.pages.wp_login import WPLoginPage
+from dsl.pages.wp_plugins import WPPluginsPage
 from helpers.utils import Settings as settings
 import pytest
 from playwright.sync_api import sync_playwright
 
-from helpers.utils import load_yaml, yaml_files
+from helpers.utils import load_yaml
 
 
 @pytest.fixture(autouse=True)
@@ -16,8 +21,7 @@ def initiate_browser():
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
     ]
     ua = user_agent_strings[random.randint(0, len(user_agent_strings) - 1)]
-    # Switched browser to firefox, because chromium does not support use of proxy server
-    browser = p.firefox.launch(headless=False)
+    browser = p.chromium.launch(headless=False)
     page = browser.new_page(user_agent=ua)
 
     # load yml files and save them in context
@@ -26,3 +30,18 @@ def initiate_browser():
     settings.page = page
 
     return page
+
+
+@pytest.fixture()
+def plugin_setup_and_teardown():
+    WPLoginPage().login_to_dashboard(username=settings.users['administrator']['username'],
+                                     password=settings.users['administrator']['password'])
+    dashboard = WPDashboardPage()
+    dashboard.hover_over_menu_item(menu_item='Plugins ')
+    plugins = WPPluginsPage()
+    plugins.add_wp_crawler()
+    plugins.activate_plugin()
+    yield
+    dashboard.select_menu_item(menu_item='Plugins ')
+    plugins.deactivate_plugin()
+    plugins.delete_plugin()

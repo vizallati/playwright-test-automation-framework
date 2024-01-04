@@ -1,15 +1,21 @@
+locators:
   pages:
-    home_page:
-      job_title: '//*[@id="text-input-what"]'
-      location: '//*[@id="text-input-where"]'
-      accept_cookies: '//*[@id="onetrust-accept-btn-handler"]'
-      close_pop_up: '//*[@class="icl-CloseButton icl-Card-close"]'
-    results_page:
-      job_cards: '//*[@class="css-5lfssm eu4oa1w0"]'
-    job_page:
-      job_title: '//*[@class="jobsearch-JobInfoHeader-title css-161nklr e1tiznh50"]'
-      location: '//*[@data-testid="inlineHeader-companyLocation"]/div'
-      salary: '//*[@id="salaryInfoAndJobType"]/span[1]'
-      role_type: '//*[@id="salaryInfoAndJobType"]/span[2]'
-      job_description: '//*[@id="jobDescriptionText"]'
-      employer: '//*[@data-testid="inlineHeader-companyName"]'
+    login_page:
+      username: '//*[@id="user_login"]'
+      password: '//*[@id="user_pass"]'
+      login_button: '//*[@id="wp-submit"]'
+    dashboard_page:
+      menu_item: '//*[@class="wp-menu-name" and text()="{item_name}"]'
+      wp_crawler: '//*[@href="tools.php?page=wpcrawler_admin"]'
+    plugins_page:
+      add_new_plugin: '//*[@href="plugin-install.php"]'
+      choose_file_button: '//*[@id="pluginzip"]'
+      installation_confirmation: '//*[text()="Plugin installed successfully."]'
+      activation_confirmation: '//*[text()="Plugin activated."]'
+      deactivate_wp_crawler: '//*[@aria-label="Deactivate wp-crawler-wpplugin"]'
+      deactivation_confirmation: '//*[text()="Plugin deactivated."]'
+      delete_wp_crawler: '//*[@id="delete-wp-crawler-wpplugin"]'
+      deletion_confirmation: '//*[@id="wp-crawler-wpplugin-deleted"]'
+    wp_crawler:
+      crawl_button: '//*[@id="wpcrawler-crawl-button"]'
+      crawl_results: '//*[@id="pages-list"]'
