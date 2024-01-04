@@ -8,7 +8,9 @@ from helpers.utils import Settings as settings
 class BaseActions:
     def __init__(self, page: Page):
         """
-        Initialize BaseActions with a Playwright Page instance.
+        Base class containing common methods for interacting with web pages using Playwright.
+        This class is intended to be inherited by various page object models,
+        providing a set of reusable methods for navigation, element interaction...
 
         Args:
             page (Page): The Playwright Page instance.

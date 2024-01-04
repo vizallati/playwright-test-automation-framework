@@ -18,4 +18,4 @@ locators:
       deletion_confirmation: '//*[@id="wp-crawler-wpplugin-deleted"]'
     wp_crawler:
       crawl_button: '//*[@id="wpcrawler-crawl-button"]'
-      crawl_results: '//*[@id="pages-list"]'
+      crawl_results: '#pages-list li'

@@ -1,39 +1,53 @@
-import os
-import random
-
 from dsl.pages.wp_dashboard import WPDashboardPage
 from dsl.pages.wp_login import WPLoginPage
 from dsl.pages.wp_plugins import WPPluginsPage
-from helpers.utils import Settings as settings
-import pytest
+from helpers.utils import Settings as settings, add_tags_allure, add_links_allure
 from playwright.sync_api import sync_playwright
-
+from allure_commons import plugin_manager
+from allure_pytest_bdd.pytest_bdd_listener import PytestBDDListener
 from helpers.utils import load_yaml
+import allure
+import pytest
 
 
-@pytest.fixture(autouse=True)
 def initiate_browser():
     p = sync_playwright().start()
-    user_agent_strings = [
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.2227.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.3497.92 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
-    ]
-    ua = user_agent_strings[random.randint(0, len(user_agent_strings) - 1)]
     browser = p.chromium.launch(headless=False)
-    page = browser.new_page(user_agent=ua)
-
+    page = browser.new_page()
     # load yml files and save them in context
     load_yaml('../settings.yml')
     load_yaml('../locators.yml')
+    settings.browser = browser
     settings.page = page
 
-    return page
 
-
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def plugin_setup_and_teardown():
+    """
+    Fixture for setting up and tearing down plugin-related actions for a pytest session.
+
+    This fixture performs the following actions:
+    1. Initiates the browser.
+    2. Logs in to the WordPress dashboard using administrator credentials.
+    3. Navigates to the 'Plugins' section on the dashboard.
+    4. Adds, activates, and sets up the 'WP Crawler' plugin.
+    5. Yields control to the test function or fixture that uses this setup.
+    6. After the test session is complete, deactivates and deletes the 'WP Crawler' plugin.
+
+    Usage:
+    - Use this fixture as a setup and teardown mechanism for test sessions that involve plugin functionality.
+
+    Example:
+    ```
+    def test_example(plugin_setup_and_teardown):
+        # Test logic that relies on the plugin setup
+        pass
+    ```
+
+    Returns:
+    None
+    """
+    initiate_browser()
     WPLoginPage().login_to_dashboard(username=settings.users['administrator']['username'],
                                      password=settings.users['administrator']['password'])
     dashboard = WPDashboardPage()
@@ -45,3 +59,89 @@ def plugin_setup_and_teardown():
     dashboard.select_menu_item(menu_item='Plugins ')
     plugins.deactivate_plugin()
     plugins.delete_plugin()
+    settings.browser.close()
+
+
+def pytest_bdd_before_scenario(request, feature, scenario):
+    """
+    Set up actions to be performed before each BDD scenario.
+    Parameters:
+        - request: pytest request object
+        - feature: pytest_bdd feature object
+        - scenario: pytest_bdd scenario object
+
+    Returns:
+        None
+    """
+    settings.pytest_bdd_step_error = False
+
+
+def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func_args, exception):
+    """
+    Handle errors that occur during BDD step execution.
+    Capture a screenshot if an exception is raised, and attach it to the allure report.
+
+    Parameters:
+        - request: pytest request object
+        - feature: pytest_bdd feature object
+        - scenario: pytest_bdd scenario object
+        - step: pytest_bdd step object
+        - step_func: BDD step function
+        - step_func_args: arguments passed to the step function
+        - exception: the exception raised during step execution
+
+    Returns:
+        None
+    """
+    settings.pytest_bdd_step_error = True
+    settings.page.screenshot(path=f'screenshots/{request.node.name}.png')
+    allure.attach.file(source=f'screenshots/{request.node.name}.png', name=f'{request.node.name}',
+                       attachment_type=allure.attachment_type.PNG)
+
+
+def pytest_bdd_after_scenario(request, feature, scenario):
+    """
+    Actions to be performed after each BDD scenario, attaches logs to the allure reports in case of test failure.
+
+    Parameters:
+        - request: pytest request object
+        - feature: pytest_bdd feature object
+        - scenario: pytest_bdd scenario object
+
+    Returns:
+        None
+    """
+    if settings.pytest_bdd_step_error is True:
+        allure.attach.file(source='pytest.log', name='logs', attachment_type=allure.attachment_type.TEXT)
+
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item):
+    """
+    pytest hook function to customize the Allure report for BDD scenarios.
+
+    This hook is triggered after the test item has been executed, and it customizes the Allure report by:
+    1. Retrieving the test result and setting it in the global `settings.test_result`.
+    2. Adding tags to the Allure report based on pytest markers.
+    3. Adding links to the Allure report based on test case IDs.
+    4. Setting the description of the test result in the Allure report.
+
+    Parameters:
+    - item: The pytest item object.
+
+    Returns:
+    None
+    """
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.when == "call" and report.failed:
+        for plugin in plugin_manager.list_name_plugin():
+            p = plugin[1]
+            if isinstance(p, PytestBDDListener):
+                settings.test_result = p.lifecycle._get_item()
+                add_tags_allure(item)
+                add_links_allure()
+                # add description to allure report
+                settings.test_result.description = settings.test_result.name
+
