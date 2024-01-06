@@ -1,8 +1,5 @@
-import random
 import re
-import time
 from playwright.sync_api import Page
-from helpers.utils import Settings as settings
 
 
 class BaseActions:
@@ -132,3 +129,6 @@ class BaseActions:
         Accept a dialog prompt once it appears on the page.
         """
         self.page.once("dialog", self.handle_dialog)
+
+    def wait_for_page_load(self):
+        self.page.wait_for_load_state('load')

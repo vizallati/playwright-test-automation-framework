@@ -1,5 +1,5 @@
 from dsl.base_actions import BaseActions
-from helpers.utils import Settings as settings, yaml_files, get_absolute_path, load_yaml
+from helpers.utils import Settings as settings
 
 
 class WPCrawlerPage(BaseActions):
@@ -18,3 +18,7 @@ class WPCrawlerPage(BaseActions):
             text_content = list_item.text_content()
             all_results.append(text_content)
         return all_results
+
+    def get_crawl_schedule(self):
+        self.page.wait_for_load_state('load')
+        return self.get_text(locator=self.locators['crawl_schedule'])

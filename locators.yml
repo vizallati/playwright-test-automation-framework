@@ -19,3 +19,4 @@ locators:
     wp_crawler:
       crawl_button: '//*[@id="wpcrawler-crawl-button"]'
       crawl_results: '#pages-list li'
+      crawl_schedule: '//*[@id="wpcrawler-cron-crawl-status"]'

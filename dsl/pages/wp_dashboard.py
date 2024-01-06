@@ -1,5 +1,5 @@
 from dsl.base_actions import BaseActions
-from helpers.utils import Settings as settings, yaml_files, get_absolute_path, load_yaml
+from helpers.utils import Settings as settings
 
 
 class WPDashboardPage(BaseActions):

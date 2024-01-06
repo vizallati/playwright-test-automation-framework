@@ -1,5 +1,5 @@
 from dsl.base_actions import BaseActions
-from helpers.utils import Settings as settings, yaml_files, get_absolute_path, load_yaml
+from helpers.utils import Settings as settings
 
 
 class WPLoginPage(BaseActions):
@@ -8,7 +8,7 @@ class WPLoginPage(BaseActions):
         self.locators = settings.locators['pages']['login_page']
 
     def login_to_dashboard(self, username, password):
-        self.navigate_to_page(url=f'{settings.host}/wp-admin')
+        self.navigate_to_page(url=f"{settings.wordpress_creds['host']}/wp-admin")
         self.send_text(self.locators['username'], username)
         self.send_text(self.locators['password'], password)
         self.click_on_element(locator=self.locators['login_button'])

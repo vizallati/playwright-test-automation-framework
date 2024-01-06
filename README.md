@@ -43,9 +43,12 @@ cd playwright-test-automation-framework
 pip install -r requirements.txt
 ```
 ### Running Tests
+Before running the tests edit the settings.yml with respective creds for your WordPress environment
+
 Run the tests using the following command:
 
 ```bash
+cd tests
 pytest --alluredir=allure-results
 ```
 This command will execute the tests and generate Allure report data in the allure-results directory.
