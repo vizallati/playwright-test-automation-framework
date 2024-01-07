@@ -4,7 +4,7 @@ from dsl.pages.wp_crawler import WPCrawlerPage
 from dsl.pages.wp_dashboard import WPDashboardPage
 
 
-@when("I navigate to the crawl admin page and click on crawl button")
+@when("I navigate to the crawler admin page and click on crawl button")
 def navigate_and_trigger_crawl():
     wp_dashboard = WPDashboardPage()
     wp_dashboard.hover_over_menu_item(menu_item='Tools')

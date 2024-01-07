@@ -1,6 +1,5 @@
 from assertpy import assert_that
 from pytest_bdd import then
-
 from helpers.ssh_client import SSHClient
 from helpers.utils import Settings as settings
 from dsl.pages.wp_crawler import WPCrawlerPage
