@@ -33,4 +33,4 @@ def check_for_sitemap_file():
     result = ssh_client.run_command(command)
     logger.info(result)
     ssh_client.close()
-    assert_that(result).is_true(), "sitemap.html file was not deleted"
+    assert_that(result).is_false(), "sitemap.html file was not deleted"
